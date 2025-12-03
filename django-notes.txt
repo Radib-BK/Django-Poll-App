@@ -1,0 +1,186 @@
+STEP 1 — Create Project
+`django-admin startproject mysite`
+# This creates project settings and global URLs.
+
+# You mainly care about:
+mysite/
+    settings.py
+    urls.py
+
+
+STEP 2 — Create an App
+`python manage.py startapp blog`
+# This creates your “feature module”.
+
+
+PART A — DATA: Creating a Model
+STEP 3 — Define your database model
+
+-- blog/models.py --
+
+`class Post(models.Model):
+    title = models.CharField(max_length=200)
+    body = models.TextField()
+    created = models.DateTimeField(auto_now_add=True)`
+
+Meaning:
+# Post will become a database table
+
+title = VARCHAR
+body = TEXT
+created = auto timestamp
+
+
+STEP 4 — Activate the app in settings
+-- mysite/settings.py --
+
+INSTALLED_APPS = [
+    ...
+    'blog',
+]
+# This tells Django to recognize the blog app.
+
+STEP 5 — Make database migrations
+`python manage.py makemigrations`
+`python manage.py migrate`
+# This creates actual database tables.
+
+
+PART B — ADMIN: Manage Data
+STEP 6 — Register model in admin
+
+-- blog/admin.py --
+
+`from .models import Post
+admin.site.register(Post)`
+
+Now you can:
+Add posts via admin UI
+Edit posts
+View them
+
+
+STEP 7 — Create admin user
+`python manage.py createsuperuser`
+
+Go to:
+http://127.0.0.1:8000/admin
+
+You can now create blog posts.
+
+
+PART C — ROUTING: Connect URL → View → Template
+STEP 8 — Add URL for the blog app
+
+-- blog/urls.py -- (create file if missing)
+
+`from django.urls import path
+from . import views`
+
+urlpatterns = [
+    path('', views.post_list),
+]
+
+Meaning:
+When user goes to /blog/, call post_list() in views.py.
+
+
+STEP 9 — Include blog routes in main project
+
+-- mysite/urls.py --
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('blog/', include('blog.urls')),
+]
+
+
+Meaning:
+
+anything under /blog/ will be routed to blog app.
+
+PART D — VIEW: Fetch data & send to template
+STEP 10 — Write the view
+
+-- blog/views.py --
+
+`from django.shortcuts import render
+from .models import Post
+
+def post_list(request):
+    posts = Post.objects.all()
+    return render(request, 'blog/post_list.html', {'posts': posts})`
+
+
+Meaning:
+Fetch all posts from DB using ORM
+Return HTML template
+Pass variable posts
+
+
+PART E — TEMPLATE: Display the data
+STEP 11 — Create templates folder
+blog/
+   templates/
+      blog/
+         post_list.html
+
+
+STEP 12 — Write template
+
+-- post_list.html --
+
+<h1>Blog Posts</h1>
+
+{% for post in posts %}
+    <h2>{{ post.title }}</h2>
+    <p>{{ post.body }}</p>
+    <small>{{ post.created }}</small>
+{% endfor %}
+
+
+Meaning:
+Loop through posts
+Display fields
+
+🔁 Concept Connection Map
+
+Here’s how Django flows in your brain:
+User visits URL → urls.py → views.py → models.py (optional) → templates → Response
+
+
+Concrete example:
+/blog/ → blog/urls.py → post_list() view → fetch from DB via models → return post_list.html with data
+
+🧠 What you should understand now
+
+✔ What an app is
+✔ What a model is
+✔ How migrations work
+✔ What the admin is
+✔ How URL routing works
+✔ How views return HTML
+✔ How templates receive data
+✔ End-to-end data flow
+
+
+--------------------------------------------------------------------------
+
+# Generates Migration files
+python manage.py makemigrations 
+
+# Makes actual database changes
+python manage.py migrate
+
+# show SQL for a specific migration (migration name like 0001_initial)
+python manage.py sqlmigrate polls 0001_initial
+
+# For pagination we can use built in function in the views.py file
+from django.core.paginator import Paginator
+ServiceData = Service.objects.all()  //fetches all data of service
+paginator = Paginator(ServiceData,2) //shows 2 data
+page_number = request.GET.get('page')
+ServiceDatafinal = paginator.get_page(page_number)
+data = {
+    'serviceData' : ServiceDatafinal,
+}
