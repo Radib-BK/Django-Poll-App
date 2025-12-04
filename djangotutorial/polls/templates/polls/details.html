@@ -1,0 +1,7 @@
+<h2>Question ID : {{question.id}}</h2>
+<h3>Question : {{question.question_text}}</h3>
+<ul>
+{%for choice in question.choice_set.all%}
+    <li> {{ choice.choice_text}} </li>
+{%endfor%}
+</ul>
