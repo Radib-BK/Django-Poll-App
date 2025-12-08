@@ -19,12 +19,13 @@ ChoiceFormSet = inlineformset_factory(
     can_delete=False,
 )
 
-# For updating questions - shows only existing choices (no extra empty ones)
+
 ChoiceUpdateFormSet = inlineformset_factory(
     Question,
     Choice,
     fields=['choice_text'],
-    extra=0,
+    extra=4,
+    max_num=4,
     can_delete=False,
 )
 
@@ -136,13 +137,14 @@ class QuestionUpdateView(UpdateView):
         return context
     
     def form_valid(self, form):
-        # transaction.atomic = "Save ALL or save NOTHING"
         with transaction.atomic():
             self.object = form.save()
             
             choice_formset = ChoiceUpdateFormSet(self.request.POST, instance=self.object)
-            
             for choice_form in choice_formset:
+                if not choice_form['choice_text'].value():
+                    continue
+                
                 if choice_form.has_changed():
                     choice = choice_form.save(commit=False)
                     choice.votes = 0
