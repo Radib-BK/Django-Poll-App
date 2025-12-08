@@ -2,6 +2,7 @@ from django.shortcuts import render, get_list_or_404, get_object_or_404  # type:
 from django.http import HttpResponse, HttpResponseRedirect # pyright: ignore[reportMissingModuleSource]
 from django.http import Http404 # type: ignore
 from django.db.models import F  # type: ignore
+from django.db import transaction
 from django.urls import reverse_lazy, reverse
 from django.utils import timezone
 from django.views.generic import ListView, DetailView, CreateView, DeleteView, UpdateView # type: ignore
@@ -135,19 +136,19 @@ class QuestionUpdateView(UpdateView):
         return context
     
     def form_valid(self, form):
-        self.object = form.save()
-        
-        choice_formset = ChoiceUpdateFormSet(self.request.POST, instance=self.object)
-        
-        # Loop through each choice form
-        for choice_form in choice_formset:
-            # Check if this choice was changed
-            if choice_form.has_changed():
-                choice = choice_form.save(commit=False)
-                choice.votes = 0  # Reset votes to 0
-                choice.save()
-            else:
-                choice_form.save()
+        # transaction.atomic = "Save ALL or save NOTHING"
+        with transaction.atomic():
+            self.object = form.save()
+            
+            choice_formset = ChoiceUpdateFormSet(self.request.POST, instance=self.object)
+            
+            for choice_form in choice_formset:
+                if choice_form.has_changed():
+                    choice = choice_form.save(commit=False)
+                    choice.votes = 0
+                    choice.save()
+                else:
+                    choice_form.save()
         
         return HttpResponseRedirect(self.success_url)
     
