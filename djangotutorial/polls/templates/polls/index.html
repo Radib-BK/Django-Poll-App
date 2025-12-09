@@ -1,3 +1,7 @@
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'polls/style.css' %}">
+
 <h2> Welcome to the POLL app</h2>
 
 <a href="{% url 'polls:create' %}"><button type="button">+ Create New Poll</button></a><br><br>
