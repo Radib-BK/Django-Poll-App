@@ -1,16 +1,14 @@
-from django.shortcuts import render, get_list_or_404, get_object_or_404  # type: ignore
-from django.http import HttpResponse, HttpResponseRedirect # pyright: ignore[reportMissingModuleSource]
-from django.http import Http404 # type: ignore
-from django.db.models import F  # type: ignore
+from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponseRedirect
+from django.db.models import F
 from django.db import transaction
 from django.urls import reverse_lazy, reverse
 from django.utils import timezone
-from django.views.generic import ListView, DetailView, CreateView, DeleteView, UpdateView # type: ignore
+from django.views.generic import ListView, DetailView, CreateView, DeleteView, UpdateView
 from django.forms import inlineformset_factory
 from .models import Question, Choice
 
 
-# For creating new questions - shows 4 empty choice fields
 ChoiceFormSet = inlineformset_factory(
     Question,
     Choice,
@@ -18,7 +16,6 @@ ChoiceFormSet = inlineformset_factory(
     extra=4,
     can_delete=False,
 )
-
 
 ChoiceUpdateFormSet = inlineformset_factory(
     Question,
@@ -30,13 +27,6 @@ ChoiceUpdateFormSet = inlineformset_factory(
 )
 
 
-# def index(request):
-#     latest_question_list = get_list_or_404(
-#         Question.objects.order_by("pub_date")[:5]
-#     )
-#     context = {"latest_question_list": latest_question_list}
-#     return render(request, "polls/index.html", context)
-
 class IndexView(ListView):
     model = Question
     template_name = "polls/index.html"
@@ -46,46 +36,21 @@ class IndexView(ListView):
         return self.model.objects.order_by("-pub_date")
 
 
-# def detail(request, question_id):
-#     # return HttpResponse(f"You're looking at question {question_id}.")
-#     question = get_object_or_404(Question, pk=question_id)
-#     context = {
-#         "question" : question,
-#     }
-#     return render(request, "polls/details.html", context)
-
 class DetailView(DetailView):
     model = Question
     template_name = "polls/details.html"
     context_object_name = "question"
 
-# def results(request, question_id):
-#     # return HttpResponse(f"You're looking at the result of question {question_id}.")
-#     ques = get_object_or_404(Question, pk=question_id)
-#     context = {
-#         "question" : ques,
-#     }
-#     return render(request, "polls/results.html", context)
-
-class ResultsView(DetailView):
-    model = Question
-    template_name = "polls/results.html"
-    context_object_name = "question"
-
 
 def vote(request, question_id):
-    ques = get_object_or_404(Question, pk=question_id)
+    question = get_object_or_404(Question, pk=question_id)
     try:
-        selected_choice = ques.choice_set.get(pk=request.POST["choice"])
+        selected_choice = question.choice_set.get(pk=request.POST["choice"])
     except (KeyError, Choice.DoesNotExist):
-        return render(
-            request,
-            "polls/details.html",
-            {
-                "question": ques,
-                "error_message": "You didn't select a choice."
-            }
-        )
+        return render(request, "polls/details.html", {
+            "question": question,
+            "error_message": "You didn't select a choice."
+        })
     else:
         selected_choice.votes = F("votes") + 1
         selected_choice.save()
@@ -94,7 +59,7 @@ def vote(request, question_id):
 
 class QuestionCreateView(CreateView):
     model = Question
-    fields = ['question_text']  # Which fields to show in the form
+    fields = ['question_text']
     template_name = "polls/create_question.html"
     success_url = reverse_lazy('polls:index')
     
@@ -107,16 +72,15 @@ class QuestionCreateView(CreateView):
         return context
     
     def form_valid(self, form):
-        # Set publish date and save the question
         form.instance.pub_date = timezone.now()
         self.object = form.save()
         
-        # Save the choices linked to this question
         choice_formset = ChoiceFormSet(self.request.POST, instance=self.object)
         choice_formset.save()
         
         return HttpResponseRedirect(self.success_url)
-    
+
+
 class QuestionUpdateView(UpdateView):
     model = Question
     fields = ['question_text']
@@ -125,7 +89,6 @@ class QuestionUpdateView(UpdateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
         if self.request.POST:
             context['choice_formset'] = ChoiceUpdateFormSet(self.request.POST, instance=self.object)
         else:
@@ -145,13 +108,13 @@ class QuestionUpdateView(UpdateView):
                     
                     choice = choice_form.save(commit=False)
                     choice.question = self.object
-                    # Reset votes to 0 only for new choices or if choice text changed
-                    if not choice.pk or 'choice_text' in choice_form.changed_data:
+                    if 'choice_text' in choice_form.changed_data:
                         choice.votes = 0
                     choice.save()
         
         return HttpResponseRedirect(self.success_url)
-    
+
+
 class QuestionDeleteView(DeleteView):
     model = Question
     template_name = "polls/confirm_delete_question.html"

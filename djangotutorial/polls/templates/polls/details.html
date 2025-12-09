@@ -34,7 +34,7 @@
             {% for choice in question.choice_set.all %}
             <div class="summary-item">
                 <span class="choice-name">{{ choice.choice_text }}</span>
-                <span class="vote-count">{{ choice.votes }} vote{{ choice.votes|pluralize }}</span>
+                <span class="vote-count">{{ choice.votes }} vote(s)</span>
             </div>
             {% endfor %}
             
