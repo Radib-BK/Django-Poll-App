@@ -9,25 +9,27 @@
 <body>
     <div class="container">
         <h1 class="page-title">{{ question.question_text }}</h1>
-        
-        <form action="{% url 'polls:vote' question.id %}" method="post" class="vote-form">
-            {% csrf_token %}
-            
-            {% if error_message %}
-            <p class="error-message">{{ error_message }}</p>
-            {% endif %}
-            
-            <div class="choices-container">
-                {% for choice in question.choice_set.all %}
-                <label class="choice-option">
-                    <input type="radio" name="choice" value="{{ choice.id }}">
-                    <span>{{ choice.choice_text }}</span>
-                </label>
-                {% endfor %}
-                <button type="submit" class="btn">Vote</button>
-            </div>
-            
-        </form>
+
+        <div class="poll-summary">
+            <form action="{% url 'polls:vote' question.id %}" method="post" class="vote-form">
+                {% csrf_token %}
+                
+                {% if error_message %}
+                <p class="error-message">{{ error_message }}</p>
+                {% endif %}
+                
+                <div class="choices-container">
+                    {% for choice in question.choice_set.all %}
+                    <label class="choice-option">
+                        <input type="radio" name="choice" value="{{ choice.id }}">
+                        <span>{{ choice.choice_text }}</span>
+                    </label>
+                    {% endfor %}
+                    <button type="submit" class="btn">Vote</button>
+                </div>
+                
+            </form>
+        </div>
         
         <div class="poll-summary">
             <h2>Poll Summary</h2>
