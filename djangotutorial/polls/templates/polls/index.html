@@ -1,33 +1,32 @@
 {% load static %}
 
-<link rel="stylesheet" href="{% static 'polls/style.css' %}">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Polls App</title>
+    <link rel="stylesheet" href="{% static 'polls/style.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1 class="page-title">Polls</h1>
+        
+        <div class="cards-container">
+            {% for question in latest_question_list %}
+            <div class="card">
+                <h2 class="card-title">{{ question.question_text }}</h2>
+                <a href="{% url 'polls:detail' question.id %}" class="btn">Vote Now</a>
+            </div>
+            {% endfor %}
+            
 
-<h2> Welcome to the POLL app</h2>
-
-<a href="{% url 'polls:create' %}"><button type="button">+ Create New Poll</button></a><br><br>
-
-{% if latest_question_list %}
-<table border="1" cellpadding="8" cellspacing="0">
-    <thead>
-        <tr>
-            <th>Question</th>
-            <th>Publish Date</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-
-    <tbody>
-        {% for question in latest_question_list %}
-        <tr>
-            <td>{{ question.question_text }}</td>
-            <td>{{ question.pub_date }}</td>
-            <td>
-                <a href="{% url 'polls:detail' question.id %}">View</a> -- <a href="{% url 'polls:delete' question.id %}">Delete</a> -- <a href="{% url 'polls:update' question.id %}">Update </a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% else %}
-<p>No polls are available.</p>
-{% endif %}
+            <a href="{% url 'polls:create' %}" class="card add-card">
+                <span class="plus-icon">+</span>
+            </a>
+        </div>
+        
+        {% if not latest_question_list %}
+        <p class="no-polls">No polls available. Click the + card to create one!</p>
+        {% endif %}
+    </div>
+</body>
+</html>
