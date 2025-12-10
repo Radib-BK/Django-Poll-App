@@ -4,11 +4,13 @@
 <html lang="en">
 <head>
     <title>Polls App</title>
-    <link rel="stylesheet" href="{% static 'polls/style.css' %}">
+    {% comment %} <link rel="stylesheet" href="{% static 'polls/style.css' %}"> {% endcomment %}
+    <link href="{% static 'css/output.css' %}" rel="stylesheet">
 </head>
 <body>
     <div class="container">
-        <h1 class="page-title">Polls</h1>
+        {% comment %} <h1 class="page-title">Polls</h1> {% endcomment %}
+        <h1 class="text-4xl font-bold">Polls</h1>
         
         <div class="cards-container">
             {% for question in latest_question_list %}
